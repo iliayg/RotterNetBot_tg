@@ -1,8 +1,10 @@
-import json
 import time
+import json
 import asyncio
 from telegram import ParseMode
+from time import localtime, strftime
 from aiogram.dispatcher.filters import Text
+from aiogram.utils.exceptions import BotBlocked
 from aiogram import Bot, Dispatcher, executor, types
 from main import main, new_user, check_news_update, save_in_json, token
 
@@ -25,21 +27,25 @@ async def get_fresh_news(message: types.Message):
 
 async def send_news():
     while True:
-        updated_news = check_news_update()
-        with open("users_dict.json") as file:
-            info = json.load(file)
-        user_id = []
-        for i in info:
-            user_id.append(i['user_id'])
-        for each in user_id:
-                for k, v in sorted(updated_news):
-                    news = f"<a href='{(v['article_url'])}'> {'מבזק'}</a>"
-                    await bot.send_message(each, news, parse_mode=ParseMode.HTML)
-                    save_in_json()
-                    time.sleep(5)
-        print("I'm alive!")
-        await asyncio.sleep(900)
-
+        try:
+            updated_news = check_news_update()
+            with open("users_dict.json") as file:
+                info = json.load(file)
+            user_id = []
+            for i in info:
+                user_id.append(i['user_id'])
+            for each in user_id:
+                        for k, v in sorted(updated_news):
+                            news = f"<a href='{(v['article_url'])}'> {'מבזק'}</a>"
+                            await bot.send_message(each, news, parse_mode=ParseMode.HTML)
+                            save_in_json()
+                            time.sleep(5)
+            print("I'm alive! (rotter.net)")
+            print(strftime("%Y-%m-%d %H:%M:%S\n", localtime()))
+            await asyncio.sleep(600)
+        except BotBlocked:
+            print("--- UserBlocked ---")
+            print(strftime("%Y-%m-%d %H:%M:%S\n", localtime()))
 
 if __name__ == '__main__':
     main()
